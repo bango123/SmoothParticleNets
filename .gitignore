@@ -13,3 +13,6 @@ build
 *.so
 *.egg-info
 tests/pytest_args.py
+*.swp
+dist/
+
