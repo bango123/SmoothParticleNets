@@ -155,7 +155,17 @@ class _ConvSPFunction(torch.autograd.Function):
 
     @staticmethod
     def forward(self, qlocs, locs, data, neighbors, weight, bias, radius, kernel_size, dilation, dis_norm, kernel_fn, ncells, nshared_device_mem=-1):
-        self.save_for_backward(qlocs, locs, data, neighbors, weight, bias, radius, kernel_size, dilation, dis_norm, kernel_fn, ncells, nshared_device_mem)
+        self.save_for_backward(qlocs, locs, data, weight, bias)
+
+        self.neighbors = neighbors
+        self.radius = radius
+        self.kernel_size = kernel_size
+        self.dilation = dilation
+        self.dis_norm = dis_norm
+        self.kernel_fn = kernel_fn
+        self.ncells = ncells
+        self.nshared_device_mem = nshared_device_mem
+
         batch_size = locs.size()[0]
         M = qlocs.size()[1]
         nkernels = weight.size()[0]
@@ -174,10 +184,20 @@ class _ConvSPFunction(torch.autograd.Function):
         ret += bias.view(1, 1, nkernels)
 
         return ret
-    
+
     # @staticmethod
     def backward(self, grad_output):
-        qlocs, locs, data, neighbors, weight, bias, radius, kernel_size, dilation, dis_norm, kernel_fn, ncells, nshared_device_mem = self.saved_tensors
+        qlocs, locs, data, weight, bias = self.saved_tensors
+
+        neighbors = self.neighbors
+        radius = self.radius
+        kernel_size = self.kernel_size
+        dilation = self.dilation
+        dis_norm = self.dis_norm
+        kernel_fn = self.kernel_fn
+        ncells = self.ncells
+        nshared_device_mem = self.nshared_device_mem
+
         ret_qlocs = grad_output.new(qlocs.size())
         ret_qlocs.fill_(0)
         ret_locs = grad_output.new(locs.size())

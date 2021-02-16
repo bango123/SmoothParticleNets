@@ -222,7 +222,9 @@ class _HashgridOrderFunction(torch.autograd.Function):
 
     @staticmethod
     def forward(self, locs, lower_bounds, grid_dims, radius, max_grid_dim, cellIDs, cuda_buffer):
-        self.save_for_backward(locs, lower_bounds, grid_dims)
+        self.save_for_backward(locs)
+        self.lower_bounds = lower_bounds
+        self.grid_dims = grid_dims
         batch_size = locs.size()[0]
         N = locs.size()[1]
         idxs = locs.new(batch_size, N)
@@ -238,7 +240,9 @@ class _HashgridOrderFunction(torch.autograd.Function):
 
     @staticmethod
     def backward(self, grad_idxs):
-        locs, lower_bounds, grid_dims = self.saved_tensors
+        locs = self.saved_tensors
+        lower_bounds = self.lower_bounds
+        grid_dims = self.grid_dims
         return (
             grad_idxs.new(locs.size()).fill_(0),
             grad_idxs.new(lower_bounds.size()).fill_(0),
@@ -259,8 +263,9 @@ class _ParticleCollisionFunction(torch.autograd.Function):
 
     @staticmethod
     def forward(self, qlocs, locs, lower_bounds, grid_dims, radius, max_collisions, cellIDs, cellStarts, cellEnds, include_self):
-        self.save_for_backward(qlocs, locs, lower_bounds, grid_dims, radius, max_collisions, cellIDs, cellStarts,
-                cellEnds, include_self)
+        self.save_for_backward(qlocs, locs)
+        self.lower_bounds = lower_bounds
+        self.grid_dims = grid_dims
         batch_size = locs.size()[0]
         M = qlocs.size()[1]
         neighbors = locs.new(batch_size, M, max_collisions)
@@ -280,7 +285,9 @@ class _ParticleCollisionFunction(torch.autograd.Function):
     
     @staticmethod
     def backward(self, grad_neighbors):
-        qlocs, locs, lower_bounds, grid_dims = self.saved_tensors
+        qlocs, locs = self.saved_tensors
+        lower_bounds = self.lower_bounds
+        grid_dims = self.grid_dims
         return (
             grad_neighbors.new(qlocs.size()).fill_(0),
             grad_neighbors.new(locs.size()).fill_(0),
@@ -296,7 +303,8 @@ class _ReorderDataFunction(torch.autograd.Function):
     
     @staticmethod
     def forward(self, idxs, locs, data, reverse):
-        self.save_for_backward(idxs,reverse)
+        self.idxs = idxs
+        self.reverse = reverse
         nlocs = locs.new(*locs.size())
         ndata = locs.new(*data.size())
         if locs.is_cuda:
@@ -307,7 +315,8 @@ class _ReorderDataFunction(torch.autograd.Function):
         return nlocs, ndata
     @staticmethod
     def backward(self, grad_locs, grad_data):
-        idxs,reverse = self.saved_tensors
+        idxs = self.idxs
+        reverse = self.reverse
         nlocs = grad_locs.new(*grad_locs.size())
         ndata = grad_data.new(*grad_data.size())
         if grad_locs.is_cuda:
