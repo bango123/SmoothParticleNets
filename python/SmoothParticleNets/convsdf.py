@@ -171,8 +171,18 @@ class _ConvSDFFunction(torch.autograd.Function):
     def forward(ctx, locs, idxs, poses, scales, weight, bias, sdfs, sdf_offsets, sdf_shapes, kernel_size,
             dilation, max_distance, compute_pose_grads):
         
-        ctx.save_for_backward(locs, idxs, poses, scales, weight, bias, sdfs, sdf_offsets, sdf_shapes, 
-                kernel_size, dilation, max_distance, compute_pose_grads)
+        ctx.save_for_backward(locs, poses, weight, bias)
+
+        ctx.idxs = idxs
+        ctx.scales = scales
+        ctx.sdfs = sdfs
+        ctx.sdf_offsets = sdf_offsets
+        ctx.sdf_shapes = sdf_shapes
+        ctx.kernel_size = kernel_size
+        ctx.dilation = dilation
+        ctx.max_distance = max_distance
+        ctx.compute_pose_grads = compute_pose_grads
+
         batch_size = locs.size()[0]
         N = locs.size()[1]
         nkernels = weight.size()[0]
@@ -194,7 +204,18 @@ class _ConvSDFFunction(torch.autograd.Function):
     def backward(self, grad_output):
         pdb.set_trace()
         grad_output = grad_output.contiguous()
-        locs, idxs, poses, scales, weight, bias, sdfs, sdf_offsets, sdf_shapes, kernel_size, dilation, max_distance, compute_pose_grads = self.saved_tensors
+        locs, poses, weight, bias = self.saved_tensors
+
+        idxs = self.idxs
+        scales = self.scales
+        sdfs = self.sdfs
+        sdf_offsets = self.sdf_offsets
+        sdf_shapes = self.sdf_shapes
+        kernel_size = self.kernel_size
+        dilation = self.dilation
+        max_distance = self.max_distance
+        compute_pose_grads = self.compute_pose_grads
+
         ret_locs = grad_output.new(locs.size())
         ret_locs.fill_(0)
         ret_weight = grad_output.new(weight.size())
