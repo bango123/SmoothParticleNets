@@ -154,7 +154,8 @@ class _ConvSPFunction(torch.autograd.Function):
     #    self.nshared_device_mem = nshared_device_mem
 
     @staticmethod
-    def forward(self, qlocs, locs, data, neighbors, weight, bias, radius, kernel_size, dilation, dis_norm, kernel_fn, ncells, nshared_device_mem=-1):
+    def forward(self, qlocs, locs, data, neighbors, weight, bias, radius, kernel_size,
+                dilation, dis_norm, kernel_fn, ncells, nshared_device_mem=-1):
         self.save_for_backward(qlocs, locs, data, weight, bias)
 
         self.neighbors = neighbors
@@ -216,11 +217,6 @@ class _ConvSPFunction(torch.autograd.Function):
             _ext.spn_convsp_backward(qlocs, locs, data, neighbors, weight, bias, radius,
                                      kernel_size, dilation, dis_norm, kernel_fn,
                                      grad_output, ret_qlocs, ret_locs, ret_data, ret_weight)
-        # PyTorch requires gradients for each input, but we don't care about the
-        # gradients for neighbors, so set that to all 0s.
-        return (ret_qlocs,
-                ret_locs,
-                ret_data,
-                grad_output.new(neighbors.size()).fill_(0),
-                ret_weight,
-                grad_output.sum(1).sum(0))
+
+        return (ret_qlocs, ret_locs, ret_data, None, ret_weight, grad_output.sum(1).sum(0),
+                None, None, None, None, None, None, None)

@@ -263,4 +263,5 @@ class _ConvSDFFunction(torch.autograd.Function):
                 ret_poses,
                 grad_output.new(scales.size()).fill_(0),
                 ret_weight,
-                grad_output.sum(1).sum(0))
+                grad_output.sum(1).sum(0),
+                None, None, None, None, None, None, None)

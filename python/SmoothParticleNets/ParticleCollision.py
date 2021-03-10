@@ -240,13 +240,14 @@ class _HashgridOrderFunction(torch.autograd.Function):
 
     @staticmethod
     def backward(self, grad_idxs):
-        locs = self.saved_tensors
+        locs = self.saved_tensors[0]
         lower_bounds = self.lower_bounds
         grid_dims = self.grid_dims
         return (
             grad_idxs.new(locs.size()).fill_(0),
             grad_idxs.new(lower_bounds.size()).fill_(0),
-            grad_idxs.new(grid_dims.size()).fill_(0),)
+            grad_idxs.new(grid_dims.size()).fill_(0),
+            None, None, None, None)
 
 
 class _ParticleCollisionFunction(torch.autograd.Function):
@@ -292,7 +293,8 @@ class _ParticleCollisionFunction(torch.autograd.Function):
             grad_neighbors.new(qlocs.size()).fill_(0),
             grad_neighbors.new(locs.size()).fill_(0),
             grad_neighbors.new(lower_bounds.size()).fill_(0),
-            grad_neighbors.new(grid_dims.size()).fill_(0),)
+            grad_neighbors.new(grid_dims.size()).fill_(0),
+            None, None, None, None, None, None)
 
 
 class _ReorderDataFunction(torch.autograd.Function):
@@ -312,7 +314,9 @@ class _ReorderDataFunction(torch.autograd.Function):
                 raise Exception("Cuda error")
         else:
             _ext.spn_reorder_data(locs, data, idxs, nlocs, ndata, reverse)
+
         return nlocs, ndata
+
     @staticmethod
     def backward(self, grad_locs, grad_data):
         idxs = self.idxs
@@ -326,4 +330,4 @@ class _ReorderDataFunction(torch.autograd.Function):
         else:
             _ext.spn_reorder_data(grad_locs, grad_data, idxs, nlocs, ndata,
                                   1 - reverse)
-        return idxs.new(idxs.size()).fill_(0), nlocs, ndata
+        return idxs.new(idxs.size()).fill_(0), nlocs, ndata, None
