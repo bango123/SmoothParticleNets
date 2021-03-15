@@ -279,8 +279,8 @@ class _ParticleCollisionFunction(torch.autograd.Function):
                                                  include_self):
                 raise Exception("Cuda error")
         else:
-            _ext.spn_compute_collisions(qlocs, locs, lower_bounds, grid_dims, self.cellIDs,
-                                        self.cellStarts, self.cellEnds, neighbors, self.radius, self.radius, self.include_self)
+            _ext.spn_compute_collisions(qlocs, locs, lower_bounds, grid_dims, cellIDs,
+                                        cellStarts, cellEnds, neighbors, radius, radius, include_self)
 
         return neighbors
     
