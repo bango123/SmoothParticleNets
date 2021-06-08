@@ -33,7 +33,7 @@ Specifically, this library is confirmed to work on Ubuntu 18.04 with PyTorch 0.4
 To install this library, download the source from github.
 Once downloaded, enter the root directory of the source and run
 ```bash
-sudo python3 setup.py install
+sudo python3 setup.py installsudo python3 setup.py install
 ```
 
 Once installed, in Python you should be able to call 'import SmoothParticleNets', which will import the library.

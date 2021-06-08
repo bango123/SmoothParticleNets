@@ -120,6 +120,19 @@ KERNELS["sigmoid"] = "1.0f/(1.0f + expf((d - 0.2f*H)*20.0f/H))"
 DKERNELS["sigmoid"] = ("-20.0f*expf((d - 0.2f*H)*20.0f/H)/" + 
 	"(H*(expf((d - 0.2f*H)*20.0f/H) + 1.0f)*(expf((d - 0.2f*H)*20.0f/H) + 1.0f))")
 
+
+""" DSPIKY^2:
+	\eta^2 * \sigma^2 * 4 * (1 - d/H)^2/H^2
+		 H = radius
+		 d = distance
+	\sigma = 1/pi (dim norm)
+	  \eta = 15/(H^3) (norm)
+"""
+"""
+KERNELS["dspiky_squared"]  = "15.0f*15.0f/(M_PI*M_PI*H*H*H*H*H*H)*4.0f*(1.0f - d/H)*(1.0f - d/H)/(H*H)"
+DKERNELS["dspiky_squared"] = "15.0f*15.0f/(M_PI*M_PI*H*H*H*H*H*H)*4.0f*2.0f*(1.0f - d/H)*(-1.0f/H)/(H*H)"
+"""
+
 KERNEL_NAMES = sorted(KERNELS.keys())
 
 import math
